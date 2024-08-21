@@ -59,14 +59,18 @@ def add_sentence_bert_similarity(row):
 
 
 def add_stat_column_to_aligned(cleaned_data, stats_dict, sentence_alignment_path):
-    """
-    Adding all readability measures in dict to aligned data
-    :param cleaned_data: data 
-    """
-    aligned_sentences = pd.read_csv(sentene_alignment_path)
+    aligned_sentences = pd.read_csv(sentence_alignment_path)
+    aligned_sentences = aligned_sentences[["text_id","sentence_id","Text Ele Sentence","Text Adv Sentence"]]
     for name, func in stats_dict.items():
         aligned_sentences[name] = aligned_sentences.apply(func, axis=1)
+
+    for column in aligned_sentences.columns:
+        if isinstance(column, tuple):
+            tuple_df = aligned_sentences[column].apply(pd.Series)
+            tuple_df.columns = list(column)
+            aligned_sentences = pd.concat([aligned_sentences.drop(columns=column), tuple_df], axis=1)
+            
     add_surprisal(cleaned_data, aligned_sentences)
-    # aligned_sentences.to_csv("aligned_readabilty_measures.csv")
-    return aligned_sentences
+
+    aligned_sentences.to_csv("aligned_readability_measures.csv", index=False)
 
