@@ -1,10 +1,5 @@
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
-import spacy
-import scipy.stats
-import statsmodels.api as sm
 
 def align_with_measures(cleaned_data: pd.DataFrame, measures: list,
                         on_sentence_level: bool) -> pd.DataFrame:
@@ -53,7 +48,7 @@ def align_with_constrained_measures(cleaned_data: pd.DataFrame, measure: str, on
 
     return align_with_measures(filtered_data, [measure], on_sentence_level)
 
-  def combine_measures(clean_data: pd.DataFrame, measures: list, constrained_measures: list, ):
+  def combine_measures(clean_data: pd.DataFrame, measures: list, constrained_measures: list, aligned_readability_path):
     """
     combining eye measures and aligned readability measures data
     :param clean_data:
@@ -62,7 +57,7 @@ def align_with_constrained_measures(cleaned_data: pd.DataFrame, measure: str, on
     :return: aligned aggregated data with all measures (eye movements and readability)
     """
     data_with_measures = align_with_measures(clean_data, measures, on_sentence_level=True)
-    data_with_readability = pd.read_csv('aligned_readability_measures.csv')
+    data_with_readability = pd.read_csv(aligned_readability_path)
     data_with_readability.rename(columns={'text_id': 'paragraph_id'}, inplace=True)
 
     constrained_measures_dfs = [align_with_constrained_measures(clean_data, r_measure, True) for r_measure in
