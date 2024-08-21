@@ -15,11 +15,14 @@ def add_surprisal(cleaned_data: pd.DataFrame, aligned_sentences: pd.DataFrame)->
     """
     adding avg surprisal to sentence alignment
     :param data: cleaned data
-    :return:
+    :return: aligned data on sentences with aggregated surprisal difference
     """
     alignment_with_surprisal = (align_with_measures(cleaned_data, ['gpt2_Surprisal'], True).
                                 rename(columns={"paragraph_id": "text_id"}))
+    alignment_with_surprisal['surprisal'] = alignment_with_surprisal['gpt2_Surprisal_adv'] - alignment_with_surprisal['gpt2_Surprisal']
+    alignment_with_surprisal = alignment_with_surprisal[['surprisal', 'text_id', 'sentence_id']]
     return pd.merge(aligned_sentences, alignment_with_surprisal, on=['text_id', 'sentence_id'], how='inner')
+
 
 def add_spacy_similarity(row):
     ele_sen = row["Text Ele Sentence"]
