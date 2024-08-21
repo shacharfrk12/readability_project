@@ -4,7 +4,6 @@ import spacy
 import textstat
 from sentence_transformers import SentenceTransformer, util
 import statsmodels.api as sm
-import seaborn as sns
 import scipy.stats
 
 nlp = spacy.load('en_core_web_md')
@@ -37,15 +36,21 @@ def add_spacy_similarity(row):
     return ele_sen_trans.similarity(adv_sen_trans)
 
 
-def add_flesch_reading_ease_difference(row):
+def add_textats_measures(row):
     ele_sen = row["Text Ele Sentence"]
     adv_sen = row["Text Adv Sentence"]
 
     if pd.isna(ele_sen) or pd.isna(adv_sen):
         return np.nan
 
-    return (textstat.flesch_reading_ease(ele_sen) -
-            textstat.flesch_reading_ease(adv_sen))
+    flesch_reading_ease = textstat.flesch_reading_ease(ele_sen) - textstat.flesch_reading_ease(adv_sen)
+    flesch_kincaid_grade_score = textstat.flesch_kincaid_grade(adv_sen) - textstat.flesch_kincaid_grade(ele_sen)
+    gunning_fog = textstat.gunning_fog(adv_sen) - textstat.gunning_fog(ele_sen)
+    coleman_liau = textstat.coleman_liau_index(adv_sen) - textstat.coleman_liau_index(ele_sen)
+    smog_index = textstat.smog_index(adv_sen) - textstat.smog_index(ele_sen)
+    dale_chall = textstat.dale_chall_readability_score(adv_sen) - textstat.dale_chall_readability_score(ele_sen)
+
+    return flesch_reading_ease, flesch_kincaid_grade_score, gunning_fog, coleman_liau, smog_index, dale_chall
 
 
 def add_sentence_bert_similarity(row):
@@ -72,7 +77,7 @@ def add_stat_column_to_aligned(cleaned_data, stats_dict, sentence_alignment_path
             tuple_df = aligned_sentences[column].apply(pd.Series)
             tuple_df.columns = list(column)
             aligned_sentences = pd.concat([aligned_sentences.drop(columns=column), tuple_df], axis=1)
-            
+
     add_surprisal(cleaned_data, aligned_sentences)
 
     aligned_sentences.to_csv("aligned_readability_measures.csv", index=False)
