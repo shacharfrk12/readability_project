@@ -1,11 +1,5 @@
 import pandas as pd
-import seaborn as sns
 import numpy as np
-import spacy
-import textstat
-from sentence_transformers import SentenceTransformer, util
-import statsmodels.api as sm
-import scipy.stats
 
 columns_to_keep = [
     "IA_DWELL_TIME",
