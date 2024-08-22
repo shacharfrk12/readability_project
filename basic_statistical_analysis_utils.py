@@ -6,12 +6,17 @@ import spacy
 import scipy.stats
 import statsmodels.api as sm
 
-def box_plot_paragraph_df(data: pd.DataFrame, measure: str):
+font = {'size' : 15}
+
+plt.rc('font', **font)
+
+def box_plot_paragraph_df(data: pd.DataFrame, measure: str, measure_name):
     """
     plotting box plots of measures along data
     :param data: aligned paragraph or senence aggregated data with aggreagated measures 
                 - each measure as two appearances: on elementry\advanced section.
     :param measure: eye movement measure in the table we want to present
+    :param measure_name: name of eye movement measure
     """
   
     # dividing data to elementry and advanced
@@ -33,16 +38,17 @@ def box_plot_paragraph_df(data: pd.DataFrame, measure: str):
                       horizontalalignment='center', size='small', color='w', weight='semibold')
 
     # setting labels
-    box_plot.set(xlabel='Reading level', ylabel=f'avg {measure}', title=f'Avg {measure} \n('
+    box_plot.set(xlabel='Reading level', ylabel=f'avg {measure_name}', title=f'Avg {measure_name} \n('
                                                                         'Advanced\Elementary Reading Level)')
-  
+    plt.xticks([0, 1], ['ele', 'adv'])
 
-def box_plot_diff(data: pd, measure):
+def box_plot_diff(data: pd, measure, measure_name):
     """
     plotting box plots of differences in measures
     :param data: aligned paragraph or senence aggregated data with aggreagated measures 
                 - each measure as two appearances: on elementry\advanced section.
     :param measure: eye movement measure in the table we want to present
+    :param measure_name: name of eye movement measure
     """
     # calculating differences
     data['diff'] = data.apply(lambda row: row[measure + '_adv'] - row[measure + '_ele'], axis=1)
@@ -53,15 +59,16 @@ def box_plot_diff(data: pd, measure):
     box_plot = sns.boxplot(diff_avg)
     box_plot.text(box_plot.get_xticks()[0], 1.05*median, median,
                   horizontalalignment='center', size='small', color='w', weight='semibold')
-    box_plot.set(title=f'Difference of Avg {measure} \nin Advanced vs Elementary Reading Levels')
+    box_plot.set(title=f'Difference of Avg {measure_name} \nin Advanced vs Elementary Reading Levels')
 
 
-def plot_boxes_measures(data, measure_list):
+def plot_boxes_measures(data, measure_list, measure_names):
     """
     plotting box plots of measures
     :param data: aligned paragraph or senence aggregated data with aggreagated measures 
                 - each measure as two appearances: on elementry\advanced section.
     :param measure_list: list of measures we want to present
+    :param measure_names: list of measures names
     """
 
     # defining columns
@@ -80,12 +87,12 @@ def plot_boxes_measures(data, measure_list):
     print(stats)
 
     # plotting each measure
-    for measure in measure_list:
+    for measure, measure_name in zip(measure_list, measure_names):
         print(f"Plots for {measure}...\n")
-        plt.figure(figsize=(15,8))
+        plt.figure(figsize=(15, 8))
         plt.subplot(1, 2, 1)
-        box_plot_paragraph_df(data, measure)
+        box_plot_paragraph_df(data, measure, measure_name)
         plt.subplot(1, 2, 2)
-        box_plot_diff(data, measure)
+        box_plot_diff(data, measure, measure_name)
         plt.tight_layout(pad=5.0)
         plt.show()
