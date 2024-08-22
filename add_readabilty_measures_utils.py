@@ -3,8 +3,7 @@ import numpy as np
 import spacy
 import textstat
 from sentence_transformers import SentenceTransformer, util
-import statsmodels.api as sm
-import scipy.stats
+from agg_eye_movement_measures_final import align_with_measures
 
 nlp = spacy.load('en_core_web_md')
 bert_model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -18,8 +17,8 @@ def add_surprisal(cleaned_data: pd.DataFrame, aligned_sentences: pd.DataFrame)->
     """
     alignment_with_surprisal = (align_with_measures(cleaned_data, ['gpt2_Surprisal'], True).
                                 rename(columns={"paragraph_id": "text_id"}))
-    alignment_with_surprisal['surprisal'] = alignment_with_surprisal['gpt2_Surprisal_adv'] - alignment_with_surprisal['gpt2_Surprisal']
-    alignment_with_surprisal = alignment_with_surprisal[['surprisal', 'text_id', 'sentence_id']]
+    alignment_with_surprisal['surprisal_diff'] = alignment_with_surprisal['gpt2_Surprisal_adv'] - alignment_with_surprisal['gpt2_Surprisal_ele']
+    alignment_with_surprisal = alignment_with_surprisal[['surprisal_diff', 'text_id', 'sentence_id']]
     return pd.merge(aligned_sentences, alignment_with_surprisal, on=['text_id', 'sentence_id'], how='inner')
 
 
@@ -78,7 +77,27 @@ def add_stat_column_to_aligned(cleaned_data, stats_dict, sentence_alignment_path
             tuple_df.columns = list(column)
             aligned_sentences = pd.concat([aligned_sentences.drop(columns=column), tuple_df], axis=1)
 
-    add_surprisal(cleaned_data, aligned_sentences)
-
+    aligned_sentences = add_surprisal(cleaned_data, aligned_sentences)
     aligned_sentences.to_csv("aligned_readability_measures.csv", index=False)
 
+
+cleaned = pd.read_csv("cleaned_data.csv")
+sentence_alignment_path = 'aligned.csv'
+stats_dict = metrics_dict = {
+    "spacy_similarity": add_spacy_similarity,
+    "sentence_bert_similarity": add_sentence_bert_similarity,
+    ("flesch_reading_ease_diff",
+    "flesch_kincaid_grade_score_diff",
+    "gunning_fog_index_diff",
+    "coleman_liau_index_diff",
+    "smog_index_diff",
+    "dale_chall_score_diff"): add_textats_measures
+}
+
+
+def main():
+    add_stat_column_to_aligned(cleaned, stats_dict, sentence_alignment_path)
+
+
+if __name__ == "__main__":
+    main()
