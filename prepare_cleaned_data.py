@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 columns_to_keep = [
+    'IA_FIRST_FIX_PROGRESSIVE',
     "IA_DWELL_TIME",
     "IA_ID",
     "IA_LABEL",
@@ -80,7 +81,13 @@ def sentence_word_alignment(data: pd.DataFrame, aligned_path):
             reset_index(drop=True))
 
 
-data_path = 'ia_data_enriched_360_05052024.csv'
-org_data = pd.read_csv(data_path)[columns_to_keep]
-cleaned_data = clean_data(org_data)
-sentence_word_alignment(cleaned_data, "aligned.csv").to_csv("cleaned_data.csv", index=False)
+def main():
+    data_path = 'ia_data_enriched_360_05052024.csv'
+    org_data = pd.read_csv(data_path)[columns_to_keep]
+    cleaned_data = clean_data(org_data)
+    sentence_word_alignment(cleaned_data, "aligned.csv").drop(
+        columns=['reread', 'has_preview']).to_csv("cleaned_data.csv", index=False)
+
+
+if __name__ == '__main__':
+    main()
